@@ -1,9 +1,9 @@
-<?php
+<a href=index.php>Hem</a><hr><?php
 
 		require_once("config.php");
 		require_once("lib_functions.php");
-
-
+		require_once("EditSelectSql.php");
+		
 
       mysql_connect ($dbhost, $username, $password) or die("fel med connect");
       
@@ -12,6 +12,13 @@
       }
       	
       mysql_select_db ($_POST['database']);
+      
+    echo '<html><head>';  
+		echo '<script src="jsscripts/ajax.js" type="text/javascript" language="javascript"></script>'; 
+		echo '<script src="jsscripts/main.js" type="text/javascript" language="javascript"></script>'; 
+	echo '</head>
+	<body>
+	';  
       
 		echo ' <form name=myform method="POST"> ';
 
@@ -181,7 +188,7 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['OBRAZAC_SEL_EDIT'] ){
       <input type=hidden name='database'  value='$_POST[database]'>
       <input type=hidden name='tabela'    value='$_POST[tabela]'>
 
-      <tr><td>Prikazi</td><td colspan=2>izaberi SELECT</td><td>Tip formulara</td></tr>
+      <tr><td>Prikazi</td><td colspan=2>izaberi SELECT</td><td>Tip formulara</td><td>Select SQL</td></tr>
       ";
 
 		
@@ -394,18 +401,21 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['TAB']){
 
 
    function print_select_edit_opciju($meta, $columns){
-          echo "<tr><td>";
+          echo "<tr><td valign=top>";
 
           echo "<input type=checkbox  name='frm[$meta->name][show]' CHECKED>$meta->name
-                </td><td>";
+                </td><td valign=top>";
 
           echo "<input type=radio name='sel_edt_id' value='$meta->name'>$meta->name
-                </td><td>";
+                </td><td valign=top>";
 
           echo "<input type=radio name='sel_edt_value' value='$meta->name'>$meta->name
-                </td><td>";
+                </td><td valign=top>";
 
           mark_field_type($meta, $columns);
+           
+          echo "</td><td valign=top>";
+          ShowExtrasForSelectSQL($meta->name);
           echo "</td></tr>";
 
 
@@ -415,7 +425,18 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['TAB']){
 
    function mark_field_type($meta, $column){
    
+   $js_for_select_selected = ' 
+   onchange=" 
    
+   if(this.value == \'SELECT\'){
+   		var el =   		document.getElementById(\'selecttagsql_' . $meta->name. '\');
+   		el.style.visibility = \'visible\'   	;
+   		//el.top = GetTop(this);
+   	}else{
+   		document.getElementById(\'selecttagsql_' . $meta->name. '\').style.visibility = \'hidden\';
+   		}
+   "
+   '; 
 
    $i1 = $i2 = $i3 = $i4 = $i5 = $i6 = $i7 = $i8 = "";
    switch ($meta->type) {
@@ -440,7 +461,7 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['TAB']){
 		
 		   echo "
 		
-		      <SELECT name='frm[$meta->name][type]'>
+		      <SELECT name='frm[$meta->name][type]' $js_for_select_selected>
 					<OPTION value='SELECT'  $i3>SELECT</OPTION>
 		         <OPTION value='RADIO'   $i4>RADIO</OPTION>
 		         <OPTION value='HIDDEN'  $i5>HIDDEN</OPTION>
@@ -454,7 +475,7 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['TAB']){
    
    echo "
 
-      <SELECT name='frm[$meta->name][type]'>
+      <SELECT name='frm[$meta->name][type]' $js_for_select_selected>
 
          <OPTION value='INPUT'   $i1>INPUT</OPTION>
          <OPTION value='PASSWORD'  >PASSWORD</OPTION>
@@ -536,3 +557,6 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['TAB']){
 
 
 ?>
+<div id="errormsg"></div>
+</body>
+</html>

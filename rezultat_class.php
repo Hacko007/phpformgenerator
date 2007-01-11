@@ -1,12 +1,10 @@
 <?php
 
-$username ="";
-$password ="";
-$dbhost   ="";
+require_once("config.php");
 
 
-require_once("../log.php");
-connect_db();
+if(!empty($_GET)) extract($_GET);
+if(!empty($_POST)) extract($_POST);
 
 echo "<a href='index.php'>Home</a>";
 
@@ -40,6 +38,7 @@ class $tabela{\n\n" ;
       }
       mysql_free_result($result);
       $html .= varSTR($lista_colona,$tabela,$frm);
+      $html .= "\n\n";
       $html .= constrSTR($lista_colona,$tabela,$frm);
       $html .= "/////////     F u n k c i j e   ////////////////////////////\n\n";
       $html .= functionsSTR($lista_colona,$tabela,$frm);
@@ -73,7 +72,7 @@ echo highlight_string ($html,true);
 
    foreach($colone as $col){
       if (@$form[$col->name][vars]!= ""){
-         $str1 .= "\tvar \$$col->name ";
+         $str1 .= "\tpublic \$$col->name ";
          if(@$form[$col->name]['startval']!= "")
                $str1 .= " \t= '". $form[$col->name]['startval'] ."'";
          $str1 .= " ;\n";
@@ -90,13 +89,16 @@ echo highlight_string ($html,true);
 */
 
  function constrSTR($colone,$tab,$form){
-   $str ="
-\tfunction $tab (   ";
 
    $in_vars  = ""; // variable parametri
    $dod_vars = ""; // dodjeljivanje lokalnim vrijednostima poslate parametre
    $sql_vars = ""; // dodjeljivanje lokalnim vrijednostima iz db
    $my_id    = 'id';
+
+
+
+   $str ="";
+
    foreach($colone as $col){
       if($col->primary_key != 0)
          $my_id = $col->name ;
@@ -109,19 +111,24 @@ echo highlight_string ($html,true);
 
    $in_vars = substr($in_vars  , 0 ,-1); // skloni zadnji ,
 
-   $str .= $in_vars ." ){\n";
-   $str .= $dod_vars ."\n\t} //end $tab constructor\n\n\n";
+
+//   $str ="
+//\t/* $tab constructor */
+//\tpublic function __construct (   ";
+//   $str .= $in_vars ." ){\n";
+//   $str .= $dod_vars ."\n\t} //end $tab constructor\n\n\n";
 
 
 
    $str .= "
-\tfunction $tab(\$id){
+\t/* $tab constructor */
+\tpublic function __construct  (   \$id){
 \t\t\$sql = \"SELECT *  FROM $tab WHERE $my_id='\$id'\";
 \t\t\$result = mysql_query(\$sql);
 \t\tif(\$row    = mysql_fetch_array(\$result)){
 $sql_vars
 \t\t}
-\n\t} //end $tab constructor\n\n\n";
+\n\t} //end $tab __construct\n\n\n";
 
    return $str;
 }
@@ -140,19 +147,19 @@ $sql_vars
    foreach($colone as $col){
 
       if (@$form[$col->name][add]!= ""){ // A D D
-         $str .= "\tfunction add_" . ucfirst($col->name) ."(\$value){\n\t\t";
+         $str .= "\tpublic function add_" . ucfirst($col->name) ."(\$value){\n\t\t";
          $str .= "\$this->$col->name += \$value ; \n\t}\n\n\n";
       }
 
 
       if (@$form[$col->name][get]!= ""){ // G E T
-         $str .= "\tfunction get_" . ucfirst($col->name) ."(){\n\t\t";
+         $str .= "\tpublic function get_" . ucfirst($col->name) ."(){\n\t\t";
          $str .= "return \$this->$col->name ; \n\t}\n\n\n";
       }
 
 
       if (@$form[$col->name][set]!= ""){ // S E T
-         $str .= "\tfunction set_" . ucfirst($col->name) ."(\$value){\n\t\t";
+         $str .= "\tpublic function set_" . ucfirst($col->name) ."(\$value){\n\t\t";
          $str .= "\$this->$col->name = \$value ; \n\t}\n\n\n";
       }
 
@@ -173,7 +180,7 @@ $sql_vars
  function insertSQLSTR($colone,$tab,$form){
 
    $str  ="\t/*function insertDBfromObject */\n";
-   $str .="\tfunction insertDBfromObject(){\n";
+   $str .="\tpublic function insertDBfromObject(){\n";
    $str .="\t\t\$sql = \" INSERT INTO  $tab (";
 
    $vals = " )\n\t\t Values ( ";
@@ -209,7 +216,7 @@ $sql_vars
  function updateSQLSTR($colone,$tab,$form){
 
    $str  ="\t/* function updateDBfromObject */\n";
-   $str .="\tfunction updateDBfromObject(){\n";
+   $str .="\tpublic function updateDBfromObject(){\n";
    $str .="\t\t\$sql = \" UPDATE $tab SET \n";
 
 
@@ -238,10 +245,11 @@ $sql_vars
 */
 
  function toStringSTR($colone,$tab,$form){
-   $str ="\tfunction toString(){\n";
+   $str ="\tpublic function toString(){\n";
+   $str .="\t\techo 'Class:' . __CLASS__ . '<br/>';\n";
    foreach($colone as $col){
       if (@$form[$col->name][vars]!= ""){
-         $str .= "\t\techo '$col->name :'. \$this->$col->name .'<br>';\n";
+         $str .= "\t\techo '$col->name :'. \$this->$col->name .'<br/>';\n";
          }
       }
    return $str .  "\t}// end of toString()\n\n\n";

@@ -1,19 +1,26 @@
 <?php
 
 /// MySQL Login
-$dbhost   ="";
-$username ="";
-$password ="";
-
-
+$dbhost   ="localhost";
+$username ="root";
+$password ="root";
 
 // Default db
-$database = "bemuf_a"; 
+$database = "knjizara"; 
 
+
+ function connect_db(){
+      global $dbhost, $username, $password , $database;
+
+
+      @mysql_connect ($dbhost, $username, $password);
+      if($database == '')$database = "knjizara";
+      @mysql_select_db ($database);
+   }
 
 
 /// coment this and use your login
-require_once("../../log.php");
+
 connect_db();
 
 ?>

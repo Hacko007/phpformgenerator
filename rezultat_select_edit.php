@@ -13,7 +13,7 @@
       
       
       
-      
+     // var_dump($_POST['frm']);
       
 
 echo "<a href='index.php'>Home</a>";
@@ -427,17 +427,18 @@ function print_opciju($meta,$form , $column){
 			   	}
 					$str .= "\n</SELECT>\n\n";    		
     		}else{
-
-      $str .=  "
+			
+      $str .=   "
       <SELECT name='$meta->name'>
          <?php
-  			\$sql = \"SELECT *  FROM TableName  ORDER BY 1 \";
+         
+  			\$sql = \"SELECT *  FROM ". @$form[$meta->name]['select_db'] .".". @$form[$meta->name]['select_tablename'] ." ORDER BY ". @$form[$meta->name]['select_display_col'] ." \";
           \$result = mysql_query(\$sql);
 
            while(\$row  = mysql_fetch_array(\$result)){
               echo  \"<OPTION value='\$row[$meta->name]'\";
-              echo   (\$row['$meta->name']== \$$meta->name) ? \" SELECTED\" : \"\" ;
-              echo   \">\$row[$meta->name]</OPTION>\";
+              echo   (\$row['".@$form[$meta->name]['select_value_col']."']== \$$meta->name) ? \" SELECTED\" : \"\" ;
+              echo   \">\$row[".@$form[$meta->name]['select_display_col']."]</OPTION>\";
            }
  ?>
       </SELECT>\n";
