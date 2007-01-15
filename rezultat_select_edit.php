@@ -35,6 +35,9 @@ if(@$_POST['database'] && @$_POST['tabela']){
 
       <style type='text/css'>
 <!--
+table{
+border: 1px solid #003399;
+}
 .lable_class {
 	/* border: 1px solid #003399; */
 	background-color: #CCCCCC;

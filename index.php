@@ -539,11 +539,11 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['TAB']){
 
                 </td><td>";
 
-         echo " <input type=checkbox name='frm[$meta->name][get]' value='$meta->name'>get". ucfirst($meta->name)."
+         echo " <input type=checkbox name='frm[$meta->name][get]' value='$meta->name' checked>get". ucfirst($meta->name)."
                 </td><td>";
 
 
-          echo "<input type=checkbox name='frm[$meta->name][set]' value='$meta->name'>set". ucfirst($meta->name)."
+          echo "<input type=checkbox name='frm[$meta->name][set]' value='$meta->name' checked>set". ucfirst($meta->name)."
                 </td><td>";
 
 
