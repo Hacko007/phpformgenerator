@@ -1,6 +1,7 @@
 <?php
 
 require_once("config.php");
+require_once("lib_functions.php");
 
 
 if(!empty($_GET)) extract($_GET);
@@ -69,20 +70,35 @@ echo highlight_string ($html,true);
 
  function varSTR($colone,$tab,$form){
    $str1 ="";
-
+	 //
+	 
+	 
    foreach($colone as $col){
       if (@$form[$col->name][vars]!= ""){
          $str1 .= "\tpublic \$$col->name ";
          if(@$form[$col->name]['startval']!= "")
                $str1 .= " \t= '". $form[$col->name]['startval'] ."'";
          $str1 .= " ;\n";
-
+				
+				 $col_obj = '';
+				 if(IsSetOrEnum2($col->name, $tab) && ($col_obj = GetColumnObject($col->name, $tab)) ){
+				 	$str1 .= GetEnumConstants($col->name , GetArrayOfColumnSetValues($col_obj));
+				 	}	
          }
       }
    return $str1;
 }
 
-
+function GetEnumConstants($column_name , $array_with_enum_values){
+		$str = "\tpublic $". strtoupper($column_name) ."_ENUM = array ( \n";	
+		$i = 1;
+		$count = count($array_with_enum_values );
+		foreach($array_with_enum_values as $key => $val){
+			$str .= "\t\t'$val'";
+			$str .= ($i++  < $count) ? ",\n" : "\n";
+			}
+			return $str . "\t\t) ; \n\n" ;
+}
 
 /**
 * Generise konstruktor metodu;
@@ -147,20 +163,26 @@ $sql_vars
    foreach($colone as $col){
 
       if (@$form[$col->name][add]!= ""){ // A D D
-         $str .= "\tpublic function add_" . ucfirst($col->name) ."(\$value){\n\t\t";
+         $str .= "\tpublic function add" . ucfirst($col->name) ."(\$value){\n\t\t";
          $str .= "\$this->$col->name += \$value ; \n\t}\n\n\n";
       }
 
 
       if (@$form[$col->name][get]!= ""){ // G E T
-         $str .= "\tpublic function get_" . ucfirst($col->name) ."(){\n\t\t";
+         $str .= "\tpublic function get" . ucfirst($col->name) ."(){\n\t\t";
          $str .= "return \$this->$col->name ; \n\t}\n\n\n";
       }
 
 
       if (@$form[$col->name][set]!= ""){ // S E T
-         $str .= "\tpublic function set_" . ucfirst($col->name) ."(\$value){\n\t\t";
-         $str .= "\$this->$col->name = \$value ; \n\t}\n\n\n";
+         $str .= "\tpublic function set" . ucfirst($col->name) ."(\$value){\n\t\t";
+         
+         if(IsSetOrEnum2($col->name, $tab)){
+        		$str .= "if(in_array(\$value , $" . strtoupper($col->name) ."_ENUM) ) \n" 
+									 ."\t\t\t\$this->$col->name = \$value ; \n\t}\n\n\n";
+        	}else{
+         		$str .= "\$this->$col->name = \$value ; \n\t}\n\n\n";
+         }
       }
 
 

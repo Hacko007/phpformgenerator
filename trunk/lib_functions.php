@@ -26,8 +26,28 @@ function GetArrayOfColumnSetValues($column_object){
 	
 }
 
+function GetColumnObject($column_name, $table_name){
+		$result = mysql_query("show columns FROM $table_name like '$column_name'");
+		if($column_object = mysql_fetch_object($result)) {
+			return 	$column_object;
+		}
+		return false;
+}
 
 
 function IsSetOrEnum($column_object) {	return ereg(('set|enum'), $column_object->Type);	 }
+
+
+function IsSetOrEnum2($column, $table){
+	
+	$result = mysql_query("show columns FROM $table like '$column'");
+	if($column_object = mysql_fetch_object($result)) {
+		return 	IsSetOrEnum($column_object);
+	}
+	return false;
+}
+ 
+
+
 
 ?>
