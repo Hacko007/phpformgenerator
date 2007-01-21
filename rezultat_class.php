@@ -113,7 +113,10 @@ function GetEnumConstants($column_name , $array_with_enum_values){
 
 
 
-   $str ="";
+   $str = "
+\t/* $tab constructor */
+\tpublic function __construct  () {} //end $tab __construct\n\n\n";
+
 
    foreach($colone as $col){
       if($col->primary_key != 0)
@@ -128,23 +131,17 @@ function GetEnumConstants($column_name , $array_with_enum_values){
    $in_vars = substr($in_vars  , 0 ,-1); // skloni zadnji ,
 
 
-//   $str ="
-//\t/* $tab constructor */
-//\tpublic function __construct (   ";
-//   $str .= $in_vars ." ){\n";
-//   $str .= $dod_vars ."\n\t} //end $tab constructor\n\n\n";
-
 
 
    $str .= "
-\t/* $tab constructor */
-\tpublic function __construct  (   \$id){
+\t/* $tab GetById */
+\tpublic function GetById (   \$id){
 \t\t\$sql = \"SELECT *  FROM $tab WHERE $my_id='\$id'\";
 \t\t\$result = mysql_query(\$sql);
 \t\tif(\$row    = mysql_fetch_array(\$result)){
 $sql_vars
 \t\t}
-\n\t} //end $tab __construct\n\n\n";
+\n\t} //end $tab"."->GetById\n\n\n";
 
    return $str;
 }
