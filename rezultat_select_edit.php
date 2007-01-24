@@ -435,12 +435,15 @@ function print_opciju($meta,$form , $column){
       <SELECT name='$meta->name'>
          <?php
          
-  			\$sql = \"SELECT *  FROM ". @$form[$meta->name]['select_db'] .".". @$form[$meta->name]['select_tablename'] ." ORDER BY ". @$form[$meta->name]['select_display_col'] ." \";
+  			\$sql = \"SELECT ". @$form[$meta->name]['select_value_col'] .",".
+  			 										@$form[$meta->name]['select_display_col'] . " 
+  			 	FROM ". @$form[$meta->name]['select_db'] .".". @$form[$meta->name]['select_tablename'] ." 
+  				ORDER BY ". @$form[$meta->name]['select_display_col'] ." \";
           \$result = mysql_query(\$sql);
 
            while(\$row  = mysql_fetch_array(\$result)){
-              echo  \"<OPTION value='\$row[$meta->name]'\";
-              echo   (\$row['".@$form[$meta->name]['select_value_col']."']== \$$meta->name) ? \" SELECTED\" : \"\" ;
+              echo  \"<OPTION value='\$row[".@$form[$meta->name]['select_value_col']."]'\";
+              echo   (\$row['".@$form[$meta->name]['select_value_col']."']== @\$$meta->name) ? \" SELECTED\" : \"\" ;
               echo   \">\$row[".@$form[$meta->name]['select_display_col']."]</OPTION>\";
            }
  ?>
