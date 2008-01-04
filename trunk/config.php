@@ -6,16 +6,13 @@ $username ="root";
 $password ="root";
 
 // Default db
-$database = "knjizara"; 
+$database = "default_db"; 
 
 
  function connect_db(){
       global $dbhost, $username, $password , $database;
-
-
       @mysql_connect ($dbhost, $username, $password);
-      if($database == '')$database = "knjizara";
-      @mysql_select_db ($database);
+      if($database == '')$database = "default_db";      
    }
 
 
