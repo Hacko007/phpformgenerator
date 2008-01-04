@@ -1,24 +1,24 @@
 <?php
+echo "<a href='index.php'>Home</a>";
 
 require_once("config.php");
 require_once("lib_functions.php");
 
 
-if(!empty($_GET)) extract($_GET);
-if(!empty($_POST)) extract($_POST);
-
-echo "<a href='index.php'>Home</a>";
-
-if(!@$tabela  )   exit;
+//if(!empty($_GET)) extract($_GET);
+//if(!empty($_POST)) extract($_POST);
 
 
+
+if(!@$_POST['tabela']  )   exit();
+
+$tabela = @$_POST['tabela'];
+$frm = @$_POST['frm'];
 
 $lista_colona = array();
 
-if(@$database && @$tabela){
-      mysql_select_db ($database);
-
-
+if(@$_POST['database'] ){
+      mysql_select_db ($_POST['database']);
       $sql = "SELECT * FROM $tabela";
       $result = mysql_query($sql);
       $i = 0;
