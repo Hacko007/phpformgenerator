@@ -1,17 +1,18 @@
-<a href=index.php>Hem</a><hr><?php
+<a href=index.php> Home </a><hr><?php
 
 		require_once("config.php");
 		require_once("lib_functions.php");
 		require_once("EditSelectSql.php");
 		
 
-      mysql_connect ($dbhost, $username, $password) or die("fel med connect");
       
       if(! isset($_POST['database'])){
       	$_POST['database'] = $database ;// set default db
-      }
+         }else{
+            $database  = $_POST['database'] ;// set default db 
+         }
       	
-      mysql_select_db ($_POST['database']);
+      mysql_select_db ($database);
       
     echo '<html><head>';  
 		echo '<script src="jsscripts/ajax.js" type="text/javascript" language="javascript"></script>'; 
@@ -47,17 +48,16 @@
 		echo "</SELECT>";
 
 ?>
-<input type=submit name='OBRAZAC' value='Generisi obrazac'>
+<input type=submit name='OBRAZAC' value='Generate FORM'>
 
-<input type=submit name='OBRAZAC_SEL_EDIT' value='Generisi SELECT - EDIT obrzac'>
+<input type=submit name='OBRAZAC_SEL_EDIT' value='Generate SELECT - EDIT form'>
 
-
-<input type=submit name='OBRAZAC_CLASS' value='Generisi klassu'>
+<input type=submit name='OBRAZAC_CLASS' value='Generate php-class for table'>
 
 
 <p>
-Pregled u vidu tabele:<br>
-Red:
+View as table:<br>
+Row:
 <SELECT name='red'>
 <OPTION value='1'>1</OPTION>
 <OPTION value='2'>2</OPTION>
@@ -82,7 +82,7 @@ Red:
 </SELECT>
 
 
-Colona:<SELECT name='colona'>
+Column:<SELECT name='colona'>
 <OPTION value='1'>1</OPTION>
 <OPTION value='2'>2</OPTION>
 <OPTION value='3'>3</OPTION>
@@ -106,13 +106,13 @@ Colona:<SELECT name='colona'>
 </SELECT>
 
 
-Nacin:<SELECT name='typ_pregleda'>
-<OPTION value='one'>Samo jedna</OPTION>
-<OPTION value='all'>Sve postove</OPTION>
+How?:<SELECT name='typ_pregleda'>
+<OPTION value='one'>One row</OPTION>
+<OPTION value='all'>All rows</OPTION>
 </SELECT>
 
 
-<input type=submit name='TAB' value='Generisi pregled'>
+<input type=submit name='TAB' value='Generate view'>
 <hr noshade size=1 height=1>
 </form>
 
@@ -129,7 +129,7 @@ Nacin:<SELECT name='typ_pregleda'>
 
 
 
-// F O R M generisanje
+// F O R M generating
 
 if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['OBRAZAC']){
       mysql_select_db ($_POST['database']);
@@ -150,9 +150,8 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['OBRAZAC']){
           $meta = mysql_fetch_field($result);
           if (!$meta) {
               echo "No information available<br>\n";
-
           }else{
-          print_opciju($meta);
+            print_opciju($meta);
           }
           $i++;
       }
@@ -162,7 +161,7 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['OBRAZAC']){
 
 
       echo "
-      <tr><td> </td><td> <input type=submit  value='Generisi HTML'></td></tr>
+      <tr><td> </td><td> <input type=submit  value='Generate HTML'></td></tr>
       </form>
       </table>";
 
@@ -177,7 +176,7 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['OBRAZAC']){
 
 
 
-// F O R M - SELECT - EDIT generisanje
+// F O R M - SELECT - EDIT 
 
 if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['OBRAZAC_SEL_EDIT'] ){
       mysql_select_db ($_POST['database']);
@@ -188,7 +187,7 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['OBRAZAC_SEL_EDIT'] ){
       <input type=hidden name='database'  value='$_POST[database]'>
       <input type=hidden name='tabela'    value='$_POST[tabela]'>
 
-      <tr><td>Prikazi</td><td colspan=2>izaberi SELECT</td><td>Tip formulara</td><td>Select SQL</td></tr>
+      <tr><td>Show</td><td colspan=2>Choose SELECT</td><td>Form Type</td><td>Select SQL</td></tr>
       ";
 
 		
@@ -226,7 +225,7 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['OBRAZAC_SEL_EDIT'] ){
 
 
       echo "
-      <tr><td> </td><td> <input type=submit  value='Generisi HTML'></td></tr>
+      <tr><td> </td><td> <input type=submit  value='Generate HTML'></td></tr>
       </form>
       </table>";
 
@@ -236,7 +235,7 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['OBRAZAC_SEL_EDIT'] ){
 
 
 
-// C L A S S  generisanje
+// C L A S S  
 
 if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['OBRAZAC_CLASS'] ){
       mysql_select_db ($_POST['database']);
@@ -247,7 +246,7 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['OBRAZAC_CLASS'] ){
       <input type=hidden name='database'  value='$_POST[database]'>
       <input type=hidden name='tabela'    value='$_POST[tabela]'>
 
-      <tr><td>Variabla </td><td colspan=3>ADD/GET/SET</td><td>Pocetna vrijednost</td></tr>
+      <tr><td>Variables </td><td colspan=3>ADD/GET/SET methods</td><td>Start Values</td></tr>
       ";
 
       $sql = "SELECT * FROM $_POST[tabela]";
@@ -271,7 +270,7 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['OBRAZAC_CLASS'] ){
 
 
       echo "
-      <tr><td> </td><td> <input type=submit  value='Generisi HTML'></td></tr>
+      <tr><td> </td><td> <input type=submit  value='Generate HTML'></td></tr>
       </form>
       </table>";
 
@@ -282,7 +281,7 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['OBRAZAC_CLASS'] ){
 
 
 
-// V I E W generisanje
+// V I E W 
 
 if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['TAB']){
       mysql_select_db ($_POST['database']);
@@ -300,12 +299,12 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['TAB']){
       $i = 0;
       $max =  mysql_num_fields($result);
       echo "<tr style='font-size:8pt' bgcolor='#dfdfdf'>
-               <td width='1%'>Br</td>
-               <td width='1%'>Red:</td>
+               <td width='1%'>#:</td>
+               <td width='1%'>Row:</td>
                <td width='1%'>Col:</td>
-               <td width='1%'>Pozicija</td>
-               <td width='1%'>Prikazi</td>
-               <td>Polje</td>
+               <td width='1%'>Position</td>
+               <td width='1%'>Show</td>
+               <td>Field</td>
            </tr>\n";
       while ($i < $max) {
 
@@ -315,7 +314,8 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['TAB']){
               echo "No information available<br>\n";
 
           }else{
-          print_view_opt($i+1,$meta,$max,$red,$colona);
+              //echo "<pre>"; print_r($meta);  echo "</pre>";
+                print_view_opt($i+1,$meta,$max,$_REQUEST['red'] ,$_REQUEST['colona']);
           }
           $i++;
       }
@@ -326,7 +326,7 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['TAB']){
 
       echo "
       <tr><td> </td><td colspan=5>
-      <input type=submit name='makeview' value='Generisi HTML'></td></tr>
+      <input type=submit name='makeview' value='Generate HTML'></td></tr>
       </form>
       </table>";
    }
@@ -357,6 +357,7 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['TAB']){
 
 
    function getOptions($name,$max){
+       
    $str = "\n<SELECT name='$name'>";
    for($i = 1 ; $i <= $max ;$i++)
       $str .= "\n\t<OPTION value='$i'>$i</OPTION>";
