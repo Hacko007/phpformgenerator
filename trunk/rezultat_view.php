@@ -1,20 +1,15 @@
 <?php
 
-$username ="";
-$password ="";
-$dbhost   ="";
-
-
-require_once("../log.php");
-connect_db();
+require_once("config.php");
+ mysql_connect ($dbhost, $username, $password);
 
 echo "<a href='index.php'>Home</a>";
 
-if(!@$tabela  )   exit;
+if(!@$_POST['tabela'])   exit;
 
 
 // Sortiraj prvo po red - colona - pozicija
-      uasort ($views,"cmp");
+      uasort ($_POST['views'],"cmp");
 
 
    // sortiraj polja
@@ -40,11 +35,11 @@ if(!@$tabela  )   exit;
 $lista_colona = array();
 
 
-if(@$database && @$tabela){
-      mysql_select_db ($database);
+if(@$_POST['database'] && @$_POST['tabela']){
+      mysql_select_db ($_POST['database']);
 
 
-      $sql = "SELECT * FROM $tabela";
+      $sql = "SELECT * FROM $_POST[tabela]";
       $result = mysql_query($sql);
       $i = 0;
       $t_red = 1; // temp red
@@ -57,11 +52,11 @@ if(@$database && @$tabela){
 $html_form = $html_show = "";
 $ifsort = "\n	\$where_sort = (@\$_GET['sort']) ? ' ORDER BY ' . \$_GET['sort'] : '';	";
 
-if(@$typ_pregleda == "all"){
+if(@$_POST['typ_pregleda'] == "all"){
 
    $html_form .= "<?php
       $ifsort
-      \$sql = \"SELECT * FROM $tabela \$where_sort\";
+      \$sql = \"SELECT * FROM $_POST[tabela] \$where_sort\";
       \$result = mysql_query(\$sql);
       \$is_first_row = false;
       while(\$row    = mysql_fetch_array(\$result)){
@@ -70,7 +65,7 @@ if(@$typ_pregleda == "all"){
    }else{
       $html_form .= "<?php
       $ifsort
-      \$sql = \"SELECT * FROM $tabela \$where_sort\";
+      \$sql = \"SELECT * FROM $_POST[tabela] \$where_sort\";
       \$result = mysql_query(\$sql);
       \$is_first_row = false;
       if(\$row    = mysql_fetch_array(\$result)){
@@ -93,7 +88,7 @@ if(@$typ_pregleda == "all"){
 
    $html_header ="<tr class='header_style'>\n";
 
-foreach($views as $v => $k){
+foreach($_POST['views'] as $v => $k){
    if(@$k['prikazi'] =='' )
       continue;
 
@@ -168,12 +163,12 @@ foreach($views as $v => $k){
    $html_form .=   "\n</tr><?php } ?></table>\n";
    $html_show .=   "</td></tr></table>";
 
-   echo "<form>   <div id='vidi'>   $html_show </div>\n\n\n\n\n\n";
-
+   echo "<form>  <input type=button value='Show again'
+            onclick='vidi.innerHTML= ta.value'>
+       <div id='vidi'>   $html_show </div>\n\n\n\n\n\n<br><br>PHP-code:";
    echo "<textarea id=ta cols='80' rows='16'>";
    echo htmlentities ( $html_show);
-   echo "</textarea><br>  <input type=button value='Vidi ponovo'
-            onclick='vidi.innerHTML= ta.value'>
+   echo "</textarea><br>  
         ";
 
    echo "<br><textarea id=ta2 cols='80' rows='16'>";
@@ -181,7 +176,6 @@ foreach($views as $v => $k){
    echo "</textarea> </form>
 
       ";
-exit();
 }
 
 ?>
