@@ -46,6 +46,7 @@ class $tabela{\n\n" ;
       $html .= "/////////     S   Q   L      ///////////////////////////////\n\n";
       $html .= insertSQLSTR($lista_colona,$tabela,$frm);
       $html .= updateSQLSTR($lista_colona,$tabela,$frm);
+      $html .= DeleteSQL_str($lista_colona,$tabela,$frm);      
       $html .= toStringSTR($lista_colona,$tabela,$frm);
 
       $html .= "
@@ -60,8 +61,26 @@ echo highlight_string ($html,true);
 
 
 
+/*
+* Gets where part for uniqu rows 
+* in format:
+( primary_key1 = '$this->primary_key1' ) 
+[ AND ( primary_key2 = '$this->primary_key2' )  ... ]
+*/
+function GetUniqueWhere($colone){
+    $where = "";
 
-
+    foreach($colone as $col){
+        
+        /// Get WHERE part
+            if($col->primary_key != 0){
+                    $my_id = $col->name ;
+                        if($where != "") $where .= " AND\n";
+                    $where .=  " ( $my_id='\$this->$my_id' ) ";
+                }                  
+        }
+    return $where;
+}
 
 
 /**
@@ -117,10 +136,13 @@ function GetEnumConstants($column_name , $array_with_enum_values){
 \t/* $tab constructor */
 \tpublic function __construct  () {} //end $tab __construct\n\n\n";
 
-
+   $pk_vars = "";
+   
    foreach($colone as $col){
-      if($col->primary_key != 0)
-         $my_id = $col->name ;
+           if($col->primary_key != 0){
+                if( $pk_vars != "" ) $pk_vars .= ",";
+                $pk_vars .=  ' $' . $col->name . ' ' ;
+            }
       if (@$form[$col->name][vars]!= ""){
          $in_vars .= "\n\t\t\t\$$col->name ,";
          $dod_vars .= "\t\t\$this->$col->name \t= \t\$$col->name;\n";
@@ -131,12 +153,12 @@ function GetEnumConstants($column_name , $array_with_enum_values){
    $in_vars = substr($in_vars  , 0 ,-1); // skloni zadnji ,
 
 
-
+   $where =  GetUniqueWhere($colone);
 
    $str .= "
 \t/* $tab GetById */
-\tpublic function GetById (   \$id){
-\t\t\$sql = \"SELECT *  FROM $tab WHERE $my_id='\$id'\";
+\tpublic function GetById (  $pk_vars ){
+\t\t\$sql = \"SELECT *  FROM $tab WHERE $where \";
 \t\t\$result = mysql_query(\$sql);
 \t\tif(\$row    = mysql_fetch_array(\$result)){
 $sql_vars
@@ -198,8 +220,8 @@ $sql_vars
 
  function insertSQLSTR($colone,$tab,$form){
 
-   $str  ="\t/*function insertDBfromObject */\n";
-   $str .="\tpublic function insertDBfromObject(){\n";
+   $str  ="\t/*function DB_Insert */\n";
+   $str .="\tpublic function DB_Insert (){\n";
    $str .="\t\t\$sql = \" INSERT INTO  $tab (";
 
    $vals = " )\n\t\t Values ( ";
@@ -212,13 +234,13 @@ $sql_vars
          $vals.= "\n\t\t\t'\$this->$col->name' ," ;
          }
       }
-   $str  = substr($str  , 0 ,-1); // skloni zadnji ,
-   $vals = substr($vals  , 0 ,-1); // skloni zadnji ,
+   $str  = substr($str  , 0 ,-1); // remove last ,
+   $vals = substr($vals  , 0 ,-1); // remove last ,
 
    $str .= $vals . ") \";\n";
 
    $str .="\n\t\t@mysql_query(\$sql);\n\n";
-   $str .="\t\tif(mysql_errno() == 1062){ // Duplikat\n".
+   $str .="\t\tif(mysql_errno() == 1062){ // Duplicate primary key\n".
           "\t\t\t\$this->updateDBfromObject();\n\t\t}\n";
    $str .="\n\t}\n\n\n";
 
@@ -228,27 +250,35 @@ $sql_vars
 
 
 /**
-* Generise SQL update metodu koja ovaj objekt vraca u databazu;
+* Generate SQL for update for all fields in table for this row into 
+* database
 */
 
 
  function updateSQLSTR($colone,$tab,$form){
 
-   $str  ="\t/* function updateDBfromObject */\n";
-   $str .="\tpublic function updateDBfromObject(){\n";
+   $str  ="\t/* function DB_Update */\n";
+   $str .="\tpublic function DB_Update(){\n";
    $str .="\t\t\$sql = \" UPDATE $tab SET \n";
 
-
+   $where = "";
+   
    foreach($colone as $col){
-      if($col->primary_key != 0)
-         $my_id = $col->name ;
-      if (@$form[$col->name][vars]!= "" && $col->primary_key == 0){ //
-         $str .= "\n\t\t\t$col->name = '\$this->$col->name' ," ;
-         }
+      
+          /// Get WHERE part
+          if($col->primary_key != 0){
+                $my_id = $col->name ;
+                if($where != "") $where .= " AND\n";
+                $where .=  " ( $my_id='\$this->$my_id' ) ";
+           }
+            
+            if (@$form[$col->name][vars]!= "" && $col->primary_key == 0){ //
+                $str .= "\n\t\t\t$col->name = '\$this->$col->name' ," ;
+            }
       }
-   $str = substr($str  , 0 ,-1); // skloni zadnji ,
+   $str = substr($str  , 0 ,-1); // remove last ,
 
-   $str .="\n\t\t\tWHERE $my_id='\$this->$my_id' \";";
+   $str .="\n\t\t\tWHERE $where \";";
 
    $str .="\n\t\t@mysql_query(\$sql);";
    $str .="\n\t}\n\n\n";
@@ -257,10 +287,36 @@ $sql_vars
 }
 
 
+/**
+* Generate SQL that removes current row from database
+*/
+
+
+ function DeleteSQL_str($colone,$tab,$form){
+
+   $str  ="\t/* function DB_Delete */\n";
+   $str .="\tpublic function DB_Delete(){\n";
+   $str .="\t\t\$sql = \" DELETE FROM  $tab WHERE \n";
+   
+   /// Get WHERE part of SQL
+   $where = "";
+   foreach($colone as $col){
+           if($col->primary_key != 0){
+                $my_id = $col->name ;
+                if($where != "") $where .= " AND ";
+                $where .=  " ( $my_id='\$this->$my_id' ) ";
+         }
+   }
+   $str .="\t\t\tWHERE $where \";";
+   $str .="\n\t\t@mysql_query(\$sql);";
+   $str .="\n\t}\n\n\n";
+   return $str;
+}
+
 
 
 /**
-* Generise toString() metodu;
+* Generate toString() metodu;
 */
 
  function toStringSTR($colone,$tab,$form){
