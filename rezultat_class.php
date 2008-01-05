@@ -27,7 +27,7 @@ if(@$_POST['database'] ){
 
 <?php
 
-class $tabela{\n\n" ;
+class " .ucfirst ( $tabela ) ." {\n\n" ;
 
       while ($i < mysql_num_fields($result)) {
 
@@ -41,9 +41,9 @@ class $tabela{\n\n" ;
       $html .= varSTR($lista_colona,$tabela,$frm);
       $html .= "\n\n";
       $html .= constrSTR($lista_colona,$tabela,$frm);
-      $html .= "/////////     F u n k c i j e   ////////////////////////////\n\n";
+      $html .= "/////////     F u n c t i o n s   ////////////////////////////\n\n";
       $html .= functionsSTR($lista_colona,$tabela,$frm);
-      $html .= "/////////     S   Q   L      ///////////////////////////////\n\n";
+      $html .= "/////////     D a t a   A c c e s s      ///////////////////////////////\n\n";
       $html .= insertSQLSTR($lista_colona,$tabela,$frm);
       $html .= updateSQLSTR($lista_colona,$tabela,$frm);
       $html .= DeleteSQL_str($lista_colona,$tabela,$frm);      
@@ -51,10 +51,8 @@ class $tabela{\n\n" ;
 
       $html .= "
 
-} // end class $tabela
-?>
-
-      ";
+} // end class " .ucfirst ( $tabela ) ." 
+?>";
 
 echo highlight_string ($html,true);
 }
