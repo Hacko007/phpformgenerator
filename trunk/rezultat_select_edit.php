@@ -1,19 +1,62 @@
 <?php
 
+/*
+* Input:
+*
+*		LANG - string - path to label constants 
+*
+* 	database - string
+*
+*		tabela - string
+*
+* 	frm - 2D array : 
+*				first index is column name - 
+*				second index is properties for that column 
+*				
+*				Ie:
+*				Array(5){
+*					["address_id"]=>
+*						  array(5) {
+*						    ["show"]=>					    string(2) "on"
+*						    ["type"]=>					    string(6) "HIDDEN"
+*						    ["col_size"]=>		    	string(2) "40"
+*						    ["read_only"]=>			    string(2) "on"
+*						    ["select_db"]=>			    string(18) "information_schema"
+*						  }
+*					["address"]=>
+*					  array(4) {
+*					    ["show"]=>				    string(2) "on"
+*					    ["type"]=>				    string(5) "INPUT"
+*					    ["col_size"]=>		    string(2) "40"
+*					    ["select_db"]=>	    string(18) "information_schema"
+*					  }
+*				  ...
+*			   }
+*
+*				
+* 	sel_edt_id - string - name of column used for Select-Value 
+*
+* 	sel_edt_value - arrary with cloumn names used for Select-Display
+*		Ie:
+*		array(4) {
+*					  [0]=>  string(6) "address"
+*					  [1]=>  string(3) "zip"
+*					  [2]=>  string(4) "city"
+*					  [3]=>  string(6) "State"
+*					}
+*  
+*
+*/
 
 		require_once("config.php");
-		require_once("lib_functions.php");
-
-      @mysql_connect ($dbhost, $username, $password) or die("fel med connect");
+		require_once("lib_functions.php");      
       
-      if(@$_POST['database'] == '')
-      	$_POST['database'] = $database ;// set default db
+      if(@$_POST['database'] == '')   	$_POST['database'] = $database ;// set default db
       	
       @mysql_select_db ($_POST['database']);
       
       
-      
-     // var_dump($_POST['frm']);
+      //echo "<pre>";  var_dump($_POST['sel_edt_value']);
       
 
 echo "<a href='index.php'>Home</a>";
@@ -21,6 +64,20 @@ echo "<a href='index.php'>Home</a>";
 
 if(!@$_POST['tabela']  )   exit;
 
+if(@$_POST['LANG']  ) {	
+	require_once($_POST['LANG']);
+	}
+
+
+/// Convert names into list of $row[col_name]
+$display_cols = "";
+ function GetRowStr($item, $key){
+ 		global $display_cols;
+ 		 $display_cols .= " \$row[$item] ";
+ 	}
+	if( @$_POST['sel_edt_value']){
+		array_walk ($_POST['sel_edt_value'] , 'GetRowStr');
+	}
 
 
 
@@ -29,27 +86,11 @@ $lista_colona = array();
 
 if(@$_POST['database'] && @$_POST['tabela']){
 
-      $html="<html>
-      <head>
-      <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+      $html_with_real_data =  $html ="<html><head>
+<meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
 
-      <style type='text/css'>
-<!--
-table{
-border: 1px solid #003399;
-}
-.lable_class {
-	/* border: 1px solid #003399; */
-	background-color: #CCCCCC;
-	padding: 3px 10px 3px 30px;
-}
-.form_class {
-	/* border: 1px solid #00CCFF; */
-	background-color: #EEEEEE;
+<link rel='stylesheet' href='style.css' type='text/css'/>
 
-}
--->
-</style>
 
 
       </head>
@@ -58,59 +99,80 @@ border: 1px solid #003399;
          <form name=myform method=post>
 
          <SELECT name='edit_".@$_POST['sel_edt_id']."'>
+";
+
+$html .= "
 
          <?php
 
 
-           \$sql = \"SELECT ".@$_POST['sel_edt_id']. "," . @$_POST['sel_edt_value'] ."  FROM ". @$_POST['tabela'] ."\";
+           \$sql = \"SELECT ".@$_POST['sel_edt_id']. "," . @implode(',', @$_POST['sel_edt_value']) ."  FROM ". @$_POST['tabela'] ."\";
            \$result = mysql_query(\$sql);
 
            while(\$row    = mysql_fetch_array(\$result)){
               echo  \"<OPTION value='\$row[". @$_POST['sel_edt_id']."]'\";
               echo   (\$row['". @$_POST['sel_edt_id']."']== @\$_POST['edit_". @$_POST['sel_edt_id']."']) ? \" SELECTED\" : \"\" ;
-              echo   \">\$row[". @$_POST['sel_edt_value']."]</OPTION>\";
+              echo   \">$display_cols </OPTION>\";
            }
 
          ?>
+";
 
+
+  				@$sql = "SELECT ".@$_POST['sel_edt_id']. "," . @implode(',', @$_POST['sel_edt_value']) ."  FROM ". @$_POST['tabela'] . " LIMIT 10";
+          $result = @mysql_query($sql);
+
+           while($row    = @mysql_fetch_array($result)){
+              $html_with_real_data .=   "<OPTION value='" .@$row[@$_POST['sel_edt_id']] . "'"; 
+              $html_with_real_data .=    ($row[@$_POST['sel_edt_id']]== @$_POST['edit_' . @$_POST['sel_edt_id'] ]) ? " SELECTED" : "" ;
+              $html_with_real_data .=    '>';
+               eval(" \$html_with_real_data .=    \"$display_cols\"; ") ;
+              $html_with_real_data .=    " </OPTION>\n";
+           }
+
+$html_with_real_data .=  $html_extra ="
          </SELECT>
 
 
 
 <input type=submit
+			 id='EDITLIST'
        name='EDITLIST'
-       value='Izmijeni'
-       style='background-color:yellow;width:100pt;border: blue 1pt solid'>
+       value='$LB_VIEWCHANGE_BTN'
+       >
 
 
 
 <input type=submit
+       id='DELLIST'
        name='DELLIST'
-       value='Izbrisi'
-       onclick='return confirm(\"Ovim potezom cete izbrisati izabranu opciju!\\n\\n Zelite li to da uradite?\");'
-       style='background-color:red;color:white;border: blue 1pt solid'>
+       value='$LB_DELETE_BTN'
+       onclick='return confirm($LB_DELETE_BTN_CONFIRM );'
+       >
 
 </form>
 <p>
 
 
 <input type=button
+       id='ADDTOLIST'
        name='ADDTOLIST'
-       value='Prazan formular'
+       value='$LB_ADDTOLIST_BTN'
        onclick='location.href = \"\"'
-       title='Dodaj novo na listu'
-       style='background-color:green;color:#aaffaa;width:100pt;border: blue 1pt solid'>
+       title='$LB_ADDTOLIST_BTN_TITLE'
+       >
 
 <form method=post>
 
       ";
 
+$html .= $html_extra;
 
       
       
       mysql_select_db ($_POST['database']);
 
-      $sql = "SELECT * FROM ".@$_POST[database] .".". @$_POST[tabela] ;
+      $sql = "SELECT * FROM ".@$_POST['database'] .".". @$_POST['tabela'] ;
       $result = mysql_query($sql);
       $i = 0;
 
@@ -124,8 +186,9 @@ border: 1px solid #003399;
       		$result_c = mysql_query($sql_c);
       		if($column = mysql_fetch_object($result_c)) {
 				          	
-	            $html .= print_opciju($meta,$_POST['frm'], $column);
-	            
+	            $po = print_opciju($meta,$_POST['frm'], $column);
+	            $html .= $po;
+	            $html_with_real_data .= $po;
 	            array_push( $lista_colona ,$meta);
          	}
           }
@@ -144,26 +207,32 @@ border: 1px solid #003399;
       ".
       sqlInsertSTR($lista_colona,$_POST['tabela'],@$_POST['frm']) .
       sqlUpdateSTR($lista_colona,$_POST['tabela'],@$_POST['frm']) .
-      sqlDeleteSTR($lista_colona,$_POST['tabela'],@$_POST['frm'], "edit_".@$_POST[sel_edt_id]) .
-      sqlRow2Var($lista_colona,$_POST['tabela'],@$_POST['frm'], "edit_".@$_POST[sel_edt_id]) .
+      sqlDeleteSTR($lista_colona,$_POST['tabela'],@$_POST['frm'], "edit_".@$_POST['sel_edt_id']) .
+      sqlRow2Var($lista_colona,$_POST['tabela'],@$_POST['frm'], "edit_".@$_POST['sel_edt_id']) .
       "   ?> ";
 
-      $html .= "
+      $str .= "
        <tr>
-         <td> </td>
+         <td></td>
          <td>
-         <input type=submit name='ADD' value='Posalji'>
-         <input type=reset value='Izbrisi'></td></tr>
+         <input type='submit' id='ADD' name='ADD' value='$LB_ADD_BTN'>
+         <input type='reset'  id='RESET' value='$LB_RESET_BTN'></td></tr>
 	</form>
 </table>";
+
+ 			$html .= $str;
+	    $html_with_real_data .= $str;
 
       $html2 = htmlentities($html);
       echo "
       <tr><td> </td><td></td></tr>
       <form>
 </table>
-$html
+$html_with_real_data
 <hr>
+<br>
+$LB_SOURCE_CODE
+<br>
 <textarea name='' cols='80' rows='20'>$php_str
 
 $html2
@@ -423,10 +492,10 @@ function print_opciju($meta,$form , $column){
        			$str .=  "\n<SELECT name='$meta->name'>     \n" ;  			
 					foreach($set_vals as $set_val){
 						if($column->Default == $set_val){
-							$str .=  "	<OPTION value='$set_val'  <?php echo (@\$$meta->name == '$set_val' || @\$$meta->name == '' ) ? \"SELECTED\" : \"\" ?>>$set_val</OPTION>  \n";
+							$str .=  "	<OPTION value='$set_val' <?php echo (@\$$meta->name == '$set_val' || @\$$meta->name == '' ) ? \"SELECTED\" : \"\" ?>>$set_val</OPTION>  \n";
 						}else{
 			      		$str .=  "	<OPTION value='$set_val' <?php echo (@\$$meta->name == '$set_val') ? \"SELECTED\" : \"\" ?>>$set_val</OPTION>  \n";
-			      	}
+			      }
 			   	}
 					$str .= "\n</SELECT>\n\n";    		
     		}else{
