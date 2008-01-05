@@ -48,6 +48,24 @@ function IsSetOrEnum2($column, $table){
 }
  
 
-
+function GetLangages($selected){
+		$d = dir("lang/");
+		$html='<select id="LANG" name="LANG">';
+		while (false !== ($file = $d->read())) {
+			  if ($file != "." && $file != "..") {
+			  	$name = str_replace('.php','',$file);
+		   		//echo $name."\n";
+		
+					$html .=    "<OPTION value='". 'lang/' . $file ."'";
+          $html .=    ($name == $selected ) ? " SELECTED" : "" ;
+          $html .=    "> $name </OPTION>";
+		   				   		
+		  	}
+		}
+		$d->close();
+		$html .='</select>';
+		
+		return $html;
+	}
 
 ?>
