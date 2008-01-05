@@ -4,6 +4,7 @@
 		require_once("lib_functions.php");
 		require_once("EditSelectSql.php");
 		
+	
 
       
       if(! isset($_POST['database'])){
@@ -48,12 +49,12 @@
 		echo "</SELECT>";
 
 ?>
-<input type=submit name='OBRAZAC' value='Generate FORM'>
 
 <input type=submit name='OBRAZAC_SEL_EDIT' value='Generate SELECT - EDIT form'>
 
 <input type=submit name='OBRAZAC_CLASS' value='Generate php-class for table'>
 
+<input type=submit name='OBRAZAC' value='Generate FORM'>
 
 <p>
 View as table:<br>
@@ -186,8 +187,11 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['OBRAZAC_SEL_EDIT'] ){
 
       <input type=hidden name='database'  value='$_POST[database]'>
       <input type=hidden name='tabela'    value='$_POST[tabela]'>
+";
+	echo '<tr><td colspan=2>Labels on forms:</td><td colspan=3>'. GetLangages() . '</td></tr>';
 
-      <tr><td>Show</td><td colspan=2>Choose SELECT</td><td>Form Type</td><td>Select SQL</td></tr>
+echo "
+      <tr><td>Show</td><td>SELECT-Value</td><td>SELECT-Display</td><td>Form Type</td><td>Select SQL</td></tr>
       ";
 
 		
@@ -270,7 +274,7 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['OBRAZAC_CLASS'] ){
 
 
       echo "
-      <tr><td> </td><td> <input type=submit  value='Generate HTML'></td></tr>
+      <tr><td> </td><td> <input type=submit  value='Generate Source Code'></td></tr>
       </form>
       </table>";
 
@@ -410,8 +414,10 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['TAB']){
           echo "<input type=radio name='sel_edt_id' value='$meta->name'>$meta->name
                 </td><td valign=top>";
 
-          echo "<input type=radio name='sel_edt_value' value='$meta->name'>$meta->name
-                </td><td valign=top>";
+          //echo "<input type=radio name='sel_edt_value' value='$meta->name'>$meta->name</td>
+          echo "<input type=checkbox name='sel_edt_value[]' value='$meta->name'>$meta->name</td>
+          			
+          			<td valign=top>";
 
           mark_field_type($meta, $columns);
            
