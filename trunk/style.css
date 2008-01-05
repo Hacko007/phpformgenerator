@@ -1,0 +1,47 @@
+table{
+border: 1px solid #003399;
+}
+.lable_class {
+	/* border: 1px solid #003399; */
+	background-color: #CCCCCC;
+	padding: 3px 10px 3px 30px;
+}
+.form_class {
+	/* border: 1px solid #00CCFF; */
+	background-color: #EEEEEE;
+
+}
+
+
+/* Buttons CSS */
+#EDITLIST{
+	background-color: #F07800 ;
+	width:100pt;
+	border: darkred 2pt solid;
+}
+
+#DELLIST{
+	background-color:red;
+	color:white;
+	border: black 1pt solid;
+}
+
+#ADDTOLIST{
+	background-color:white;
+	color:black;
+	width:100pt;
+	border: green 2pt solid;
+}
+
+#ADD{
+	background-color:green;
+	color:#aaffaa;
+	width:100pt;
+	border: #183A26 2pt solid;
+}
+
+#RESET{
+	background-color:gray;
+	color:black;
+	border: black 1pt solid;
+}
