@@ -1,49 +1,23 @@
 <?php
 
-$username ="";
-$password ="";
-$dbhost   ="";
-
-
-require_once("../log.php");
-connect_db();
-
 echo "<a href='index.php'>Home</a>";
 
-if(!@$tabela  )   exit;
+require_once("config.php");
+require_once("lib_functions.php");
+
+
+
+
+if(!@$_POST['tabela']  )   exit;
+$database = @$_POST['database'];
+$tabela = @$_POST['tabela'];
+$frm = @$_POST['frm'];
 
 ?>
 
 
-<?php
-
-/*
-foreach($frm as $v => $k){
-   echo "<hr> $v => $k <br>\n";
-   foreach($k as $v2 => $k2)
-      echo " $v2 => $k2 <br>\n";
-   echo "<hr>";
-   }
 
 
-
-id => Array
-show => on
-type => INPUT
-col_size => 40
-read_only => on
---------------------------------------------------------------------------------
-naslov => Array
-show => on
-type => TEXTAREA
-col_size => 40
-row_size => 4
-
-*/
-?>
-
-
-</form>
 
 
 <?php
