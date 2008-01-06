@@ -19,3 +19,5 @@ I did application that helps you to create such class or edit form for specific 
   * Choose if you want to generate edit form or PHP class for chosen table
   * Select columns 
   * Generate code
+
+You can find this page with pictures [http://phpformgen.blogspot.com/2008/01/php-form-generator-is-here.html on my blog]
