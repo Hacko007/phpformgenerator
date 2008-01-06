@@ -10,12 +10,12 @@ I did application that helps you to create such class or edit form for specific 
 
 = How it works =
 
-* You should get source code and place it on your web site. 
-* Protect directory access
-* Change config.php  with login information for your MySQL database
-* Open index.php page in your browser.
-* Choose database
-* Choose table 
-* Choose if you want to generate edit form or PHP class for chosen table
-* Select columns 
-* Generate code
+  * You should get source code and place it on your web site. 
+  * Protect directory access
+  * Change config.php  with login information for your MySQL database
+  * Open index.php page in your browser.
+  * Choose database
+  * Choose table 
+  * Choose if you want to generate edit form or PHP class for chosen table
+  * Select columns 
+  * Generate code
