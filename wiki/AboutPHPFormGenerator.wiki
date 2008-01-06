@@ -1,0 +1,21 @@
+#summary Project description
+#labels Featured,Phase-Requirements
+
+= Introduction =
+
+If you worked some time with PHP/MySQL you will notice that you spend much time in doing same thing over and over. You need often to do a form that should change some data in some database table or you need to create PHP class and work with objects in stead of direct pulling/pushing data from database.
+
+I did application that helps you to create such class or edit form for specific database table.
+
+
+= How it works =
+
+* You should get source code and place it on your web site. 
+* Protect directory access
+* Change config.php  with login information for your MySQL database
+* Open index.php page in your browser.
+* Choose database
+* Choose table 
+* Choose if you want to generate edit form or PHP class for chosen table
+* Select columns 
+* Generate code
