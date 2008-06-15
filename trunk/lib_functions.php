@@ -52,9 +52,8 @@ function GetLangages($selected){
 		$d = dir("lang/");
 		$html='<select id="LANG" name="LANG">';
 		while (false !== ($file = $d->read())) {
-			  if ($file != "." && $file != "..") {
-			  	$name = str_replace('.php','',$file);
-		   		//echo $name."\n";
+			  if ($file != '.' && $file != '..' && $file != '.svn') {
+			  	$name = str_replace('.php','',$file);		   		
 		
 					$html .=    "<OPTION value='". 'lang/' . $file ."'";
           $html .=    ($name == $selected ) ? " SELECTED" : "" ;
