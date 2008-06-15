@@ -110,9 +110,9 @@ $html .= "
            \$result = mysql_query(\$sql);
 
            while(\$row    = mysql_fetch_array(\$result)){
-              echo  \"<OPTION value='\$row[". @$_POST['sel_edt_id']."]'\";
+              echo  \"<OPTION value='\". htmlspecialchars (\$row['". @$_POST['sel_edt_id']."'], ENT_QUOTES) .\"'\";
               echo   (\$row['". @$_POST['sel_edt_id']."']== @\$_POST['edit_". @$_POST['sel_edt_id']."']) ? \" SELECTED\" : \"\" ;
-              echo   \">$display_cols </OPTION>\";
+              echo   \">$display_cols </OPTION>\\n\";
            }
 
          ?>
@@ -233,7 +233,7 @@ $html_with_real_data
 <br>
 $LB_SOURCE_CODE
 <br>
-<textarea name='' cols='80' rows='20'>$php_str
+<textarea name='' cols='120' rows='30'>$php_str
 
 $html2
 </textarea>
@@ -254,13 +254,14 @@ $html2
 function sqlInsertSTR($colone,$tab,$form){
 	global $primary_kay;
 
-   $str1 ="Insert INTO $tab \n\t(";
-   $str2 =")\n Values (";
+   $str1 ="Insert INTO $tab \n\t(\n";
+   $str2 =")\n \tValues (\n";
 
    foreach($colone as $col){
-      if ($col->primary_key == 0 && @$form[$col->name][show]!= ""){
-         $str1 .= "\t\t$col->name ,\n";
-         $str2 .= "\t\t'\$_POST[$col->name]' ,\n";
+      if (($col->primary_key == 1 && $col->numeric ==0) 
+      		||  ($col->primary_key == 0 && @$form[$col->name][show]!= "")){
+         $str1 .= "\t\t$col->name ,\n";         
+         $str2 .= "\t\t'\". addslashes(  \$_POST['$col->name']) .\"' ,\n";          
          }
       }
 
@@ -294,14 +295,14 @@ function sqlUpdateSTR($colone,$tab,$form){
 	global $primary_kay;
 
    $str1 ="UPDATE $tab SET ";
-   $str2 ="WHERE ";
+   $str2 ="\tWHERE ";
 
    foreach($colone as $col){
       if ($col->primary_key == 0 && @$form[$col->name][show]!= ""){
-         $str1 .= "\n\t$col->name = '\$_POST[$col->name]' ,";
+         $str1 .= "\n\t$col->name = '\". addslashes(  \$_POST['$col->name']) .\"' ,";
 
          }else if($col->primary_key == 1 ){
-            $str2 .= " $col->name = '\$_POST[$col->name]' ,";
+            $str2 .= " $col->name = '\". addslashes(  \$_POST['$col->name']) .\"' ,";
          }
       }
 
@@ -338,7 +339,7 @@ function sqlUpdateSTR($colone,$tab,$form){
 
 function sqlDeleteSTR($colone,$tab,$form,$edit_id){
 	global $primary_kay;
-   $str1 =" DELETE FROM $tab WHERE  $primary_kay = '\$_POST[$edit_id]' ";
+   $str1 =" DELETE FROM $tab WHERE  $primary_kay = '\". addslashes(  \$_POST['$edit_id']) .\"' ";
 
    return "
 
@@ -375,7 +376,7 @@ function sqlRow2Var($colone,$tab,$form,$edit_id){
 
 if(@\$_POST['$edit_id']){
 
-\t\$sql = \"SELECT * FROM $tab WHERE  $primary_kay = '\$_POST[$edit_id]'\";
+\t\$sql = \"SELECT * FROM $tab WHERE  $primary_kay = '\". addslashes(  \$_POST['$edit_id']) .\"'\";
 \t\$result = mysql_query(\$sql);
 
 \tif(\$row    = mysql_fetch_array(\$result)){
@@ -433,7 +434,7 @@ function print_opciju($meta,$form , $column){
       $str .=  "<input type=text
                        size='".$form[$meta->name]['col_size']."'
                        name='$meta->name'
-                       value='<?php echo @\$$meta->name ; ?>'>\n";
+                       value='<?php echo htmlspecialchars( @\$$meta->name , ENT_QUOTES); ?>'>\n";
     break;
 
 
