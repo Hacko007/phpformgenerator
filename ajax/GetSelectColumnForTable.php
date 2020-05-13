@@ -34,15 +34,15 @@ col3
       }
       
   	
-      @mysql_select_db ($_REQUEST['database']);
+      $link->select_db ($_REQUEST['database']);
       
 
 		      $sql = "SHOW COLUMNS FROM $_REQUEST[tabela]";
-		      $result = mysql_query($sql);
+		      $result = $link->query($sql);
 		     		
 
 				$str ="";
-		     while($row    = mysql_fetch_array($result)){		     
+		     while($row    = $result->fetch_array()){		     
 				 		 	$str .= "$row[Field]\n";
 		      }
 		    

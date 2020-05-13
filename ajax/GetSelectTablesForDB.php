@@ -32,19 +32,14 @@ table3
       }
   
     	
-      mysql_select_db ($_REQUEST['database']);
-      
-
-			$result = mysql_list_tables($_REQUEST['database']);
-		
-		
-
-			$str ="";
-		  while($row    = mysql_fetch_array($result)){		     
-				 	$str .= "$row[0]\n";
-		   }
+    $link->select_db ($_REQUEST['database']);
+    $result = $link->query("SHOW TABLES FROM " . $_REQUEST['database']);
+	$str ="";
+	 while($row    = $result->fetch_array(MYSQLI_BOTH)){		     
+	 	$str .= "$row[0]\n";
+	}
 		    
-		   echo trim($str);  
+	echo trim($str);  
 		
 
 ?>

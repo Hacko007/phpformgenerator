@@ -53,7 +53,7 @@
       
       if(@$_POST['database'] == '')   	$_POST['database'] = $database ;// set default db
       	
-      @mysql_select_db ($_POST['database']);
+      @$link->select_db ($_POST['database']);
       
       
       //echo "<pre>";  var_dump($_POST['sel_edt_value']);
@@ -64,18 +64,19 @@ echo "<a href='index.php'>Home</a>";
 
 if(!@$_POST['tabela']  )   exit;
 
-if(@$_POST['LANG']  ) {	
-	require_once($_POST['LANG']);
-	}
+if(@$_POST['LANG']  ) {	require_once($_POST['LANG']); }
 
 
 /// Convert names into list of $row[col_name]
 $display_cols = "";
- function GetRowStr($item, $key){
+
+function GetRowStr($item, $key){
  		global $display_cols;
  		 $display_cols .= " \$row[$item] ";
- 	}
-	if( @$_POST['sel_edt_value']){
+}
+
+
+if( @$_POST['sel_edt_value']){
 		array_walk ($_POST['sel_edt_value'] , 'GetRowStr');
 	}
 
@@ -86,7 +87,7 @@ $lista_colona = array();
 
 if(@$_POST['database'] && @$_POST['tabela']){
 
-      $html_with_real_data =  $html ="<html><head>
+$html_with_real_data =  $html ="<html><head>
 <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
 
 <link rel='stylesheet' href='style.css' type='text/css'/>
@@ -107,9 +108,9 @@ $html .= "
 
 
            \$sql = \"SELECT ".@$_POST['sel_edt_id']. "," . @implode(',', @$_POST['sel_edt_value']) ."  FROM ". @$_POST['tabela'] ."\";
-           \$result = mysql_query(\$sql);
+           \$result = \$link->query(\$sql);
 
-           while(\$row    = mysql_fetch_array(\$result)){
+           while(\$row    = \$result->fetch_array(MYSQLI_BOTH)){
               echo  \"<OPTION value='\". htmlspecialchars (\$row['". @$_POST['sel_edt_id']."'], ENT_QUOTES) .\"'\";
               echo   (\$row['". @$_POST['sel_edt_id']."']== @\$_POST['edit_". @$_POST['sel_edt_id']."']) ? \" SELECTED\" : \"\" ;
               echo   \">$display_cols </OPTION>\\n\";
@@ -120,9 +121,9 @@ $html .= "
 
 
   				@$sql = "SELECT ".@$_POST['sel_edt_id']. "," . @implode(',', @$_POST['sel_edt_value']) ."  FROM ". @$_POST['tabela'] . " LIMIT 10";
-          $result = @mysql_query($sql);
+          $result = $link->query($sql);
 
-           while($row    = @mysql_fetch_array($result)){
+           while($row    = $result->fetch_array(MYSQLI_BOTH)){
               $html_with_real_data .=   "<OPTION value='" .@$row[@$_POST['sel_edt_id']] . "'"; 
               $html_with_real_data .=    ($row[@$_POST['sel_edt_id']]== @$_POST['edit_' . @$_POST['sel_edt_id'] ]) ? " SELECTED" : "" ;
               $html_with_real_data .=    '>';
@@ -170,21 +171,21 @@ $html .= $html_extra;
 
       
       
-      mysql_select_db ($_POST['database']);
+      $link->select_db ($_POST['database']);
 
       $sql = "SELECT * FROM ".@$_POST['database'] .".". @$_POST['tabela'] ;
-      $result = mysql_query($sql);
+      $result = $link->query($sql);
       $i = 0;
 
 
-      while ($i < mysql_num_fields($result)) {
+      while ($i < $result->field_count) {
 
           //echo "Information for column $i:<br>\n";
-          if($meta = mysql_fetch_field($result)){
+          if($meta = $result->fetch_field()){
           	
           	$sql_c = "SHOW COLUMNS FROM $_POST[tabela] LIKE '$meta->name'";
-      		$result_c = mysql_query($sql_c);
-      		if($column = mysql_fetch_object($result_c)) {
+      		$result_c = $link->query($sql_c);
+      		if($column = $result_c->fetch_object()) {
 				          	
 	            $po = print_opciju($meta,$_POST['frm'], $column);
 	            $html .= $po;
@@ -194,13 +195,15 @@ $html .= $html_extra;
           }
           $i++;
       }
-      mysql_free_result($result);
+      $result->free_result();
       $primary_kay = "id";
-	   foreach($lista_colona as $col){
-      if($col->primary_key == 1 ){
-            $primary_kay =  $col->name;
-         }
-      }
+      echo "<br>";
+	    foreach($lista_colona as $col){         
+         if( IsPrimaryKey( $col->flags )){
+               $primary_kay =  $col->name;               
+               break;
+          }          
+       }
 
       $php_str ="<?php
       //require_once('config.php');
@@ -211,7 +214,7 @@ $html .= $html_extra;
       sqlRow2Var($lista_colona,$_POST['tabela'],@$_POST['frm'], "edit_".@$_POST['sel_edt_id']) .
       "   ?> ";
 
-      $str .= "
+      $str = "
        <tr>
          <td></td>
          <td>
@@ -258,8 +261,8 @@ function sqlInsertSTR($colone,$tab,$form){
    $str2 =")\n \tValues (\n";
 
    foreach($colone as $col){
-      if (($col->primary_key == 1 && $col->numeric ==0) 
-      		||  ($col->primary_key == 0 && @$form[$col->name][show]!= "")){
+      if ((   IsPrimaryKey( $col->flags) && $col->type == 3) 
+      		||  (!IsPrimaryKey( $col->flags)  && @$form[$col->name][show] != "")){
          $str1 .= "\t\t$col->name ,\n";         
          $str2 .= "\t\t'\". addslashes(  \$_POST['$col->name']) .\"' ,\n";          
          }
@@ -274,7 +277,7 @@ function sqlInsertSTR($colone,$tab,$form){
    /////////  I N S E R T  //////////////////////
    if(@\$_POST['ADD'] && @\$_POST['$primary_kay'] == \"\"){
       \$sqlIns = \" $str1 $str2 ) \";
-      mysql_query(\$sqlIns);
+      \$link->query(\$sqlIns);
    }
    ";
 
@@ -298,10 +301,10 @@ function sqlUpdateSTR($colone,$tab,$form){
    $str2 ="\tWHERE ";
 
    foreach($colone as $col){
-      if ($col->primary_key == 0 && @$form[$col->name][show]!= ""){
+      if ( ! IsPrimaryKey( $col->flags)  && @$form[$col->name][show]!= ""){
          $str1 .= "\n\t$col->name = '\". addslashes(  \$_POST['$col->name']) .\"' ,";
 
-         }else if($col->primary_key == 1 ){
+         }else if(IsPrimaryKey( $col->flags) ){
             $str2 .= " $col->name = '\". addslashes(  \$_POST['$col->name']) .\"' ,";
          }
       }
@@ -316,7 +319,7 @@ function sqlUpdateSTR($colone,$tab,$form){
    if(@\$_POST['ADD'] && @\$_POST['$primary_kay'] != \"\"){
       \$sqlUpd = \" $str1 \n $str2 \";
 
-      mysql_query(\$sqlUpd);
+      \$link->query(\$sqlUpd);
    }
 
    ";
@@ -346,7 +349,7 @@ function sqlDeleteSTR($colone,$tab,$form,$edit_id){
    ///////// D E L E T E ////////////////////////////////
    if(@\$_POST['DELLIST'] && @\$_POST['$edit_id']){
       \$sqlDel = \"$str1\";
-      mysql_query(\$sqlDel);
+      \$link->query(\$sqlDel);
    }
 
    ";
@@ -377,9 +380,9 @@ function sqlRow2Var($colone,$tab,$form,$edit_id){
 if(@\$_POST['$edit_id']){
 
 \t\$sql = \"SELECT * FROM $tab WHERE  $primary_kay = '\". addslashes(  \$_POST['$edit_id']) .\"'\";
-\t\$result = mysql_query(\$sql);
+\t\$result = \$link->query(\$sql);
 
-\tif(\$row    = mysql_fetch_array(\$result)){
+\tif(\$row    = \$result->fetch_array(MYSQLI_BOTH)){
 
    ";
    foreach($colone as $col){
@@ -509,9 +512,9 @@ function print_opciju($meta,$form , $column){
   			 										@$form[$meta->name]['select_display_col'] . " 
   			 	FROM ". @$form[$meta->name]['select_db'] .".". @$form[$meta->name]['select_tablename'] ." 
   				ORDER BY ". @$form[$meta->name]['select_display_col'] ." \";
-          \$result = mysql_query(\$sql);
+          \$result = \$link->query(\$sql);
 
-           while(\$row  = mysql_fetch_array(\$result)){
+           while(\$row  = \$result->fetch_array(MYSQLI_BOTH)){
               echo  \"<OPTION value='\$row[".@$form[$meta->name]['select_value_col']."]'\";
               echo   (\$row['".@$form[$meta->name]['select_value_col']."']== @\$$meta->name) ? \" SELECTED\" : \"\" ;
               echo   \">\$row[".@$form[$meta->name]['select_display_col']."]</OPTION>\";

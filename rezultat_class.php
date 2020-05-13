@@ -5,11 +5,6 @@ require_once("config.php");
 require_once("lib_functions.php");
 
 
-//if(!empty($_GET)) extract($_GET);
-//if(!empty($_POST)) extract($_POST);
-
-
-
 if(!@$_POST['tabela']  )   exit();
 
 $tabela = @$_POST['tabela'];
@@ -18,9 +13,9 @@ $frm = @$_POST['frm'];
 $lista_colona = array();
 
 if(@$_POST['database'] ){
-      mysql_select_db ($_POST['database']);
+      mysqli_select_db ($link, $_POST['database']);
       $sql = "SELECT * FROM $tabela";
-      $result = mysql_query($sql);
+      $result = $link->query($sql);
       $i = 0;
 
       $html="
@@ -29,15 +24,15 @@ if(@$_POST['database'] ){
 
 class " .ucfirst ( $tabela ) ." {\n\n" ;
 
-      while ($i < mysql_num_fields($result)) {
+      while ($i < $result->field_count) {
 
           //echo "Information for column $i:<br>\n";
-          if($meta = mysql_fetch_field($result)){
+          if($meta = $result->fetch_field()){
             array_push( $lista_colona ,$meta);
           }
           $i++;
       }
-      mysql_free_result($result);
+      $result->free_result();
       $html .= varSTR($lista_colona,$tabela,$frm);
       $html .= "\n\n";
       $html .= constrSTR($lista_colona,$tabela,$frm);
@@ -71,7 +66,7 @@ function GetUniqueWhere($colone){
     foreach($colone as $col){
         
         /// Get WHERE part
-            if($col->primary_key != 0){
+            if(IsPrimaryKey($col)){
                     $my_id = $col->name ;
                         if($where != "") $where .= " AND\n";
                     $where .=  " ( $my_id='\$this->$my_id' ) ";
@@ -85,7 +80,7 @@ function GetUniqueWhere($colone){
 * Generise var ime_variable = 'start_value';
 */
 
- function varSTR($colone,$tab,$form){
+ function varSTR($colone,$tab,$form){    
    $str1 ="";
 	 //
 	 
@@ -137,7 +132,7 @@ function GetEnumConstants($column_name , $array_with_enum_values){
    $pk_vars = "";
    
    foreach($colone as $col){
-           if($col->primary_key != 0){
+           if(IsPrimaryKey($col )){
                 if( $pk_vars != "" ) $pk_vars .= ",";
                 $pk_vars .=  ' $' . $col->name . ' ' ;
             }
@@ -157,8 +152,8 @@ function GetEnumConstants($column_name , $array_with_enum_values){
 \t/* $tab GetById */
 \tpublic function GetById (  $pk_vars ){
 \t\t\$sql = \"SELECT *  FROM $tab WHERE $where \";
-\t\t\$result = mysql_query(\$sql);
-\t\tif(\$row    = mysql_fetch_array(\$result)){
+\t\t\$result = \$link->query(\$sql);
+\t\tif(\$row    = \$result->fetch_array()){
 $sql_vars
 \t\t}
 \n\t} //end $tab"."->GetById\n\n\n";
@@ -225,9 +220,9 @@ $sql_vars
    $vals = " )\n\t\t Values ( ";
 
    foreach($colone as $col){
-      if($col->primary_key != 0)
+      if(IsPrimaryKey($col ))
          $my_id = $col->name ;
-      if (@$form[$col->name][vars]!= "" && $col->primary_key == 0){ //
+      if (@$form[$col->name][vars]!= "" && !IsPrimaryKey($col )){ //
          $str .= "\n\t\t\t$col->name ,";
          $vals.= "\n\t\t\t'\$this->$col->name' ," ;
          }
@@ -237,7 +232,7 @@ $sql_vars
 
    $str .= $vals . ") \";\n";
 
-   $str .="\n\t\t@mysql_query(\$sql);\n\n";
+   $str .="\n\t\t@\$link->query(\$sql);\n\n";
    $str .="\t\tif(mysql_errno() == 1062){ // Duplicate primary key\n".
           "\t\t\t\$this->updateDBfromObject();\n\t\t}\n";
    $str .="\n\t}\n\n\n";
@@ -264,13 +259,13 @@ $sql_vars
    foreach($colone as $col){
       
           /// Get WHERE part
-          if($col->primary_key != 0){
+          if(IsPrimaryKey($col)){
                 $my_id = $col->name ;
                 if($where != "") $where .= " AND\n";
                 $where .=  " ( $my_id='\$this->$my_id' ) ";
            }
             
-            if (@$form[$col->name][vars]!= "" && $col->primary_key == 0){ //
+            if (@$form[$col->name][vars]!= "" && !IsPrimaryKey($col)){ //
                 $str .= "\n\t\t\t$col->name = '\$this->$col->name' ," ;
             }
       }
@@ -278,7 +273,7 @@ $sql_vars
 
    $str .="\n\t\t\tWHERE $where \";";
 
-   $str .="\n\t\t@mysql_query(\$sql);";
+   $str .="\n\t\t@\$link->query(\$sql);";
    $str .="\n\t}\n\n\n";
 
    return $str;
@@ -299,14 +294,14 @@ $sql_vars
    /// Get WHERE part of SQL
    $where = "";
    foreach($colone as $col){
-           if($col->primary_key != 0){
+           if(IsPrimaryKey($col)){
                 $my_id = $col->name ;
                 if($where != "") $where .= " AND ";
                 $where .=  " ( $my_id='\$this->$my_id' ) ";
          }
    }
    $str .="\t\t\tWHERE $where \";";
-   $str .="\n\t\t@mysql_query(\$sql);";
+   $str .="\n\t\t@\$link->query(\$sql);";
    $str .="\n\t}\n\n\n";
    return $str;
 }

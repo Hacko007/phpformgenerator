@@ -11,7 +11,7 @@
 
 function ShowExtrasForSelectSQL($column_name){
 
-		global $database;
+		global $database,$link;
 
       
       if(! isset($_POST['database'])){
@@ -23,8 +23,8 @@ function ShowExtrasForSelectSQL($column_name){
 		///
 		/// This value will be recived in result_select_edit.php and there should right
 		/// SELECT TAG be build
-		$db_sel_id 			= "frm[$column_name][select_db]";
-		$tab_sel_id 			= "frm[$column_name][select_tablename]";
+		$db_sel_id 		= "frm[$column_name][select_db]";
+		$tab_sel_id 	= "frm[$column_name][select_tablename]";
 		$col_value_sel_id = "frm[$column_name][select_value_col]";
 		$col_displ_sel_id = "frm[$column_name][select_display_col]";
 		
@@ -50,10 +50,9 @@ function ShowExtrasForSelectSQL($column_name){
 				'>
 
 <?php
-
-		    @mysql_select_db ($_POST['database']);		
-		    $db_list = mysql_list_dbs();
-				while ($row = mysql_fetch_object($db_list)) {
+			
+		    $db_list =$link->query("SHOW DATABASES"); 
+				while ($row = $db_list->fetch_object()) {
 				    echo "<OPTION>$row->Database</OPTION>
 				    ";
 				    

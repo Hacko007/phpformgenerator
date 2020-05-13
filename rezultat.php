@@ -26,27 +26,27 @@ $frm = @$_POST['frm'];
 $lista_colona = array();
 
 if(@$database && @$tabela){
-      mysql_select_db ($database);
+      mysqli_select_db ($link, $database);
 
 
       $sql = "SELECT * FROM $tabela";
-      $result = mysql_query($sql);
+      $result = $link->query($sql);
       $i = 0;
 
       $html="<table width='450' border='1' cellspacing='2' cellpadding='5'>
          <form name=myform>
       ";
 
-      while ($i < mysql_num_fields($result)) {
+      while ($i < $result->field_count) {
 
           //echo "Information for column $i:<br>\n";
-          if($meta = mysql_fetch_field($result)){
+          if($meta = $result->fetch_field()){
             $html .= print_opciju($meta,$frm);
             array_push( $lista_colona ,$meta);
           }
           $i++;
       }
-      mysql_free_result($result);
+      $result->free_result();
       $php_str ="
       <?php  /* \n".
       sqlInsertSTR($lista_colona,$tabela,$frm) .
@@ -87,7 +87,7 @@ function sqlInsertSTR($colone,$tab,$form){
    $str2 =")\n Values (";
 
    foreach($colone as $col){
-      if ($col->primary_key == 0 && @$form[$col->name][show]!= ""){
+      if (!IsPrimaryKey($col) && @$form[$col->name][show]!= ""){
          $str1 .= "$col->name ,";
          $str2 .= "'\$$col->name' ,";
          }
@@ -112,10 +112,10 @@ function sqlUpdateSTR($colone,$tab,$form){
    $str2 ="WHERE ";
 
    foreach($colone as $col){
-      if ($col->primary_key == 0 && @$form[$col->name][show]!= ""){
+      if (!IsPrimaryKey($col) && @$form[$col->name][show]!= ""){
          $str1 .= "\n\t$col->name = '\$$col->name' ,";
 
-         }else if($col->primary_key == 1 ){
+         }else if(IsPrimaryKey($col)){
             $str2 .= " $col->name = '\$$col->name' ,";
          }
       }
@@ -136,7 +136,7 @@ function sqlUpdateSTR($colone,$tab,$form){
 function sqlDeleteSTR($colone,$tab,$form){
    $str1 ="DELETE FROM $tab WHERE ";
    foreach($colone as $col){
-      if($col->primary_key == 1 ){
+      if(IsPrimaryKey($col) ){
             $str1 .= " $col->name = '\$$col->name' ,";
          }
       }

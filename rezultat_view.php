@@ -1,7 +1,7 @@
 <?php
 
 require_once("config.php");
- mysql_connect ($dbhost, $username, $password);
+ 
 
 echo "<a href='index.php'>Home</a>";
 
@@ -36,11 +36,11 @@ $lista_colona = array();
 
 
 if(@$_POST['database'] && @$_POST['tabela']){
-      mysql_select_db ($_POST['database']);
+      mysqli_select_db ($link, $_POST['database']);
 
 
       $sql = "SELECT * FROM $_POST[tabela]";
-      $result = mysql_query($sql);
+      $result = $link->query($sql);
       $i = 0;
       $t_red = 1; // temp red
       $t_col = 1; // temp colona
@@ -57,18 +57,18 @@ if(@$_POST['typ_pregleda'] == "all"){
    $html_form .= "<?php
       $ifsort
       \$sql = \"SELECT * FROM $_POST[tabela] \$where_sort\";
-      \$result = mysql_query(\$sql);
+      \$result = \$link->query(\$sql);
       \$is_first_row = false;
-      while(\$row    = mysql_fetch_array(\$result)){
+      while(\$row    = \$result->fetch_array()){
       ?>
       ";
    }else{
       $html_form .= "<?php
       $ifsort
       \$sql = \"SELECT * FROM $_POST[tabela] \$where_sort\";
-      \$result = mysql_query(\$sql);
+      \$result = \$link->query(\$sql);
       \$is_first_row = false;
-      if(\$row    = mysql_fetch_array(\$result)){
+      if(\$row    = \$result->fetch_array()){
       ?>
       ";
    }

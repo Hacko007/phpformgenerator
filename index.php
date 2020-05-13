@@ -13,7 +13,7 @@
             $database  = $_POST['database'] ;// set default db 
          }
       	
-      mysql_select_db ($database);
+      mysqli_select_db ($link, $database);
       
     echo '<html><head>';  
 		echo '<script src="jsscripts/ajax.js" type="text/javascript" language="javascript"></script>'; 
@@ -26,9 +26,9 @@
 
 
 
-		$db_list = mysql_list_dbs();
+		$db_list = $link->query("SHOW DATABASES");
 		echo "<SELECT name=database onchange='tabela.value =\"\"; submit()'>";
-		while ($row = mysql_fetch_object($db_list)) {
+		while ($row = $db_list->fetch_object()) {
 		    echo "<OPTION value='$row->Database'";
 		    echo (@$_POST['database'] == $row->Database) ? " SELECTED": "";
 		    echo ">$row->Database</OPTION>";
@@ -39,9 +39,9 @@
 
 		
 		echo "<SELECT name=tabela id=tabela onchange='submit()'>";
-		  $result = mysql_list_tables($_POST['database']);
+		  $result = $link->query("SHOW TABLES FROM " . $_POST['database']);
 		
-		  while($row    = mysql_fetch_array($result)){
+		  while($row    = $result->fetch_array()){
 		     echo "<OPTION value='$row[0]'";
 		    echo (@$_POST['tabela'] == $row[0]) ? " SELECTED": "";
 		    echo ">$row[0]</OPTION>";
@@ -133,7 +133,7 @@ How?:<SELECT name='typ_pregleda'>
 // F O R M generating
 
 if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['OBRAZAC']){
-      mysql_select_db ($_POST['database']);
+      mysqli_select_db ($link, $_POST['database']);
 
       echo "<table width='550' border='1' cellspacing='2' cellpadding='5'>
       <form name=tohtml method=post  action='rezultat.php'>
@@ -143,12 +143,12 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['OBRAZAC']){
       ";
 
       $sql = "SELECT * FROM $_POST[tabela]";
-      $result = mysql_query($sql);
+      $result = $link->query($sql);
       $i = 0;
-      while ($i < mysql_num_fields($result)) {
+      while ($i < $result->field_count) {
 
           //echo "Information for column $i:<br>\n";
-          $meta = mysql_fetch_field($result);
+          $meta = $result->fetch_field();
           if (!$meta) {
               echo "No information available<br>\n";
           }else{
@@ -156,7 +156,7 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['OBRAZAC']){
           }
           $i++;
       }
-      mysql_free_result($result);
+      $result->free_result();
 
 
 
@@ -180,7 +180,7 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['OBRAZAC']){
 // F O R M - SELECT - EDIT 
 
 if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['OBRAZAC_SEL_EDIT'] ){
-      mysql_select_db ($_POST['database']);
+      $link->select_db ($_POST['database']);
 
       echo "<table  border='1' cellspacing='2' cellpadding='5'>
       <form name=tohtml method=post  action='rezultat_select_edit.php'>
@@ -188,7 +188,7 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['OBRAZAC_SEL_EDIT'] ){
       <input type=hidden name='database'  value='$_POST[database]'>
       <input type=hidden name='tabela'    value='$_POST[tabela]'>
 ";
-	echo '<tr><td colspan=2>Labels on forms:</td><td colspan=3>'. GetLangages() . '</td></tr>';
+	echo '<tr><td colspan=2>Labels on forms:</td><td colspan=3>'. GetLangages("English") . '</td></tr>';
 
 echo "
       <tr><td>Show</td><td>SELECT-Value</td><td>SELECT-Display</td><td>Form Type</td><td>Select SQL</td></tr>
@@ -200,17 +200,17 @@ echo "
      
 		
 		      $sql = "SELECT * FROM $_POST[tabela]";
-		      $result = mysql_query($sql);
+		      $result = $link->query($sql);
 		      $i = 0;
-		      while ($i < mysql_num_fields($result)) {
+		      while ($i < $result->field_count) {
 		
 		          //echo "Information for column $i:<br>\n";
-		          $meta = mysql_fetch_field($result);
+		          $meta = $result->fetch_field();
 		          
 		          $sql_c = "SHOW COLUMNS FROM $_POST[tabela] LIKE '$meta->name'";
-      			$result_c = mysql_query($sql_c);
+      			$result_c = $link->query($sql_c);
       
-      			if($column = mysql_fetch_object($result_c)) {
+      			if($column = $result_c->fetch_object()) {
 			
 			          if (!$meta) {
 			              echo "No information available<br>\n";
@@ -223,7 +223,7 @@ echo "
 		      }
       
    	
-      mysql_free_result($result);
+            $result->free_result();
 
 
 
@@ -242,7 +242,7 @@ echo "
 // C L A S S  
 
 if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['OBRAZAC_CLASS'] ){
-      mysql_select_db ($_POST['database']);
+   $link->select_db ($_POST['database']);
 
       echo "<table  border='1' cellspacing='2' cellpadding='5'>
       <form name=tohtml method=post  action='rezultat_class.php'>
@@ -254,12 +254,12 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['OBRAZAC_CLASS'] ){
       ";
 
       $sql = "SELECT * FROM $_POST[tabela]";
-      $result = mysql_query($sql);
+      $result = $link->query($sql);
       $i = 0;
-      while ($i < mysql_num_fields($result)) {
+      while ($i < $result->field_count) {
 
           //echo "Information for column $i:<br>\n";
-          $meta = mysql_fetch_field($result);
+          $meta = $result->fetch_field();
           if (!$meta) {
               echo "No information available<br>\n";
 
@@ -268,7 +268,7 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['OBRAZAC_CLASS'] ){
           }
           $i++;
       }
-      mysql_free_result($result);
+      $result->free_result();
 
 
 
@@ -288,7 +288,7 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['OBRAZAC_CLASS'] ){
 // V I E W 
 
 if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['TAB']){
-      mysql_select_db ($_POST['database']);
+   $link->select_db ($_POST['database']);
 
       echo "<table width='550' border='1' cellspacing='2' cellpadding='2'>
       <form name=toviewhtml method=post action='rezultat_view.php'>
@@ -299,9 +299,9 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['TAB']){
       ";
 
       $sql = "SELECT * FROM $_POST[tabela]";
-      $result = mysql_query($sql);
+      $result = $link->query($sql);
       $i = 0;
-      $max =  mysql_num_fields($result);
+      $max =  $result->field_count;
       echo "<tr style='font-size:8pt' bgcolor='#dfdfdf'>
                <td width='1%'>#:</td>
                <td width='1%'>Row:</td>
@@ -313,7 +313,7 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['TAB']){
       while ($i < $max) {
 
           //echo "Information for column $i:<br>\n";
-          $meta = mysql_fetch_field($result);
+          $meta = $result->fetch_field();
           if (!$meta) {
               echo "No information available<br>\n";
 
@@ -323,7 +323,7 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['TAB']){
           }
           $i++;
       }
-      mysql_free_result($result);
+      $result->free_result();
 
 
 
@@ -377,7 +377,7 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['TAB']){
 
           echo "<input type=checkbox CHECKED name='frm[$meta->name][show]'>$meta->name
           </td><td>";
-          mark_field_type($meta);
+          mark_field_type($meta,NULL);
 
 
           echo "</td></tr>";
@@ -430,7 +430,7 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['TAB']){
 
 
 
-   function mark_field_type($meta, $column){
+   function mark_field_type($meta, $column ){
    
    $js_for_select_selected = ' 
    onchange=" 
@@ -462,7 +462,7 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['TAB']){
         break;
 	}
 	
-	if(IsSetOrEnum($column)){
+	if(IsSetOrEnum(@$column)){
 		$i1 = $i2 = $i3 = $i4 = $i5 = $i6 = $i7 = $i8 = "";
 		$i3 = " SELECTED";
 		
@@ -524,9 +524,9 @@ if(@$_POST['database'] && @$_POST['tabela'] && @$_POST['TAB']){
       ";
    }
 
-   if($meta->primary_key==1){
-      echo "<input type=checkbox checked name='frm[$meta->name][read_only]'>ReadOnly ";
-      }
+   // if($meta->primary_key==1){
+   //    echo "<input type=checkbox checked name='frm[$meta->name][read_only]'>ReadOnly ";
+   //    }
 
    }
 

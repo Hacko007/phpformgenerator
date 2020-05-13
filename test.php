@@ -44,7 +44,7 @@
 		'$_POST[clanovi_odbora_admin]' ,
 		'$_POST[redakcija]' ,
 		'$_POST[inventar]'  ) ";
-     // mysql_query($sqlIns);
+     // $link->query($sqlIns);
    }
    
    ///////// U P D A T E  ////////////////////
@@ -72,7 +72,7 @@
 	inventar = '$_POST[inventar]'  
  WHERE  user_id = '$_POST[user_id]'  ";
 
-    //  mysql_query($sqlUpd);
+    //  $link->query($sqlUpd);
    }
 
    
@@ -80,7 +80,7 @@
    ///////// D E L E T E ////////////////////////////////
    if(@$_POST['DELLIST'] && @$_POST['edit_user_id']){
    echo   $sqlDel = " DELETE FROM bemuf_user_profil WHERE  user_id = '$_POST[edit_user_id]' ";
-      //mysql_query($sqlDel);
+      //$link->query($sqlDel);
    }
 
    
@@ -89,9 +89,9 @@
 if(@$_POST['edit_user_id']){
 
 	$sql = "SELECT * FROM bemuf_user_profil WHERE  user_id = '$_POST[edit_user_id]'";
-	$result = mysql_query($sql);
+	$result = $link->query($sql);
 
-	if($row    = mysql_fetch_array($result)){
+	if($row    = $result->fetch_array()){
 
    		$user_id =  $row['user_id'] ;
 		$login =  $row['login'] ;
@@ -172,9 +172,9 @@ if(@$_POST['edit_user_id']){
 
 
            $sql = "SELECT user_id,login  FROM bemuf_user_profil";
-           $result = mysql_query($sql);
+           $result = $link->query($sql);
 
-           while($row    = mysql_fetch_array($result)){
+           while($row    = $result->fetch_array()){
               echo  "<OPTION value='$row[user_id]'";
               echo   ($row['user_id']== @$_POST['edit_user_id']) ? " SELECTED" : "" ;
               echo   ">$row[login]</OPTION>";
